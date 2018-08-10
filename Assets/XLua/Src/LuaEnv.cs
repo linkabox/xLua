@@ -110,8 +110,7 @@ namespace XLua
                 DoString(init_xlua, "Init");
                 init_xlua = null;
 
-                AddBuildin("socket.core", StaticLuaCallbacks.LoadSocketCore);
-                AddBuildin("socket", StaticLuaCallbacks.LoadSocketCore);
+				LuaDLLExt.AddLib(this);
 
                 LuaAPI.lua_newtable(rawL); //metatable of indexs and newindexs functions
                 LuaAPI.xlua_pushasciistring(rawL, "__index");

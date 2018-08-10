@@ -1,0 +1,48 @@
+<%
+--<默认C库名,注册接口>
+local clibs = {}
+table.insert(clibs,{"socket.core", "luaopen_socket_core"})
+-- table.insert(clibs,{"core.rapidjson", "luaopen_rapidjson"})
+
+--<额外C库名，引用上面的注册接口>
+local extlibs = {}
+table.insert(extlibs,{"socket", "luaopen_socket_core"})
+%>
+using System;
+using System.Runtime.InteropServices;
+
+using LuaAPI = XLua.LuaDLL.Lua;
+using RealStatePtr = System.IntPtr;
+using LuaCSFunction = XLua.LuaDLL.lua_CSFunction;
+
+namespace XLua.LuaDLL
+{
+	public partial class Lua
+	{
+		<%for i,v in ipairs(clibs) do%>
+		[DllImport(LUADLL, CallingConvention = CallingConvention.Cdecl)]
+		public static extern int <%=v[2]%>(System.IntPtr L);
+
+		[MonoPInvokeCallback(typeof(LuaCSFunction))]
+		internal static int <%="cs_"..v[2]%>(RealStatePtr L)
+		{
+			return <%=v[2]%>(L);
+		}
+		<%end%>
+	}
+}
+
+namespace XLua
+{
+	public static class LuaDLLExt
+	{
+		public static void AddLib(LuaEnv env)
+		{
+			<%for i,v in ipairs(clibs) do%>env.AddBuildin("<%=v[1]%>", LuaDLL.Lua.<%="cs_"..v[2]%>);
+			<%end%>
+			<%for i,v in ipairs(extlibs) do%>env.AddBuildin("<%=v[1]%>", LuaDLL.Lua.<%="cs_"..v[2]%>);
+			<%end%>
+		}
+	}
+}
+
